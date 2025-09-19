@@ -15,7 +15,7 @@ class Bootstrap
 {
     private array $container = [];
 
-    public function __construct(string $envPath)
+    public function __construct(string $envPath, bool $runRoutes = true)
     {
         $dotenv = Dotenv::createImmutable(dirname($envPath));
         $dotenv->load();
@@ -56,7 +56,9 @@ class Bootstrap
 
         $this->container['router'] = new Router($this->container);
 
-        $this->registerRoutes();
+        if ($runRoutes) {
+            $this->registerRoutes();
+        }
     }
 
     private function registerRoutes(): void
