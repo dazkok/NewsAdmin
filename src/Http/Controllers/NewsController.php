@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Http\Controllers;
 
-use App\Csrf;
-use App\Repositories\Contracts\NewsRepositoryInterface;
-use App\View;
+use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
+use App\Support\View;
 use JetBrains\PhpStorm\NoReturn;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;

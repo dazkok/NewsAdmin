@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Domain\Repositories;
 
-use App\Repositories\Contracts\NewsRepositoryInterface;
-use App\Entities\News;
-use App\Services\Database;
+use App\Domain\Models\News;
+use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
+use App\Infrastructure\Database\Database;
 use DateTime;
 use PDO;
 

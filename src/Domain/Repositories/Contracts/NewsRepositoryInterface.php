@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Repositories\Contracts;
+namespace App\Domain\Repositories\Contracts;
 
-use App\Entities\News;
+use App\Domain\Models\News;
 
 interface NewsRepositoryInterface
 {

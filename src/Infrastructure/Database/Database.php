@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Infrastructure\Database;
 
-use App\Config;
+use App\Support\Config;
 use PDO;
 
 class Database

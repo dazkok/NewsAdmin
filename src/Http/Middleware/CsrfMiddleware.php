@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Middleware;
+namespace App\Http\Middleware;
 
-use App\Csrf;
+use App\Support\Csrf;
 
 class CsrfMiddleware
 {

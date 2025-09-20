@@ -1,7 +1,8 @@
 <?php
 
-namespace App;
+namespace App\Application;
 
+use App\Http\Response;
 use ReflectionException;
 
 class Router
@@ -10,23 +11,44 @@ class Router
     private array $container;
     private array $globalMiddlewares = ['csrf_mw'];
 
-    public function __construct(array $container)
+    public function __construct(array $container = [])
     {
         $this->container = $container;
     }
 
-    public function get(string $path, callable $handler, array $middlewares = []): void
+    public function get(string $path, $handler, array $middlewares = []): void
     {
         $this->addRoute('GET', $path, $handler, $middlewares);
     }
 
-    public function post(string $path, callable $handler, array $middlewares = []): void
+    public function post(string $path, $handler, array $middlewares = []): void
     {
         $this->addRoute('POST', $path, $handler, $middlewares);
     }
 
+    public function put(string $path, $handler, array $middlewares = []): void
+    {
+        $this->addRoute('PUT', $path, $handler, $middlewares);
+    }
+
+    public function patch(string $path, $handler, array $middlewares = []): void
+    {
+        $this->addRoute('PATCH', $path, $handler, $middlewares);
+    }
+
+    public function delete(string $path, $handler, array $middlewares = []): void
+    {
+        $this->addRoute('DELETE', $path, $handler, $middlewares);
+    }
+
     private function addRoute(string $method, string $path, $handler, array $middlewares = []): void
     {
+        $method = strtoupper($method);
+
+        if (!isset($this->routes[$method]) || !is_array($this->routes[$method])) {
+            $this->routes[$method] = [];
+        }
+
         $path = $this->normalizePath($path);
         [$regex, $paramNames] = $this->compilePathToRegex($path);
 
@@ -39,53 +61,84 @@ class Router
         ];
     }
 
-    /**
-     * @throws ReflectionException
-     */
-    public function dispatch(string $method, string $uri): void
+    public function dispatch(string $method, string $uri): Response
     {
         $method = strtoupper($method);
-        $path = $this->normalizePath(parse_url($uri, PHP_URL_PASS ?? '/'));
+
+        if (in_array($method, ['PUT', 'PATCH', 'DELETE'])) {
+            $this->parseJsonInput();
+        }
+
+        $path = parse_url($uri, PHP_URL_PATH);
+        $path = $this->normalizePath($path ?? '/');
 
         if ($method === 'HEAD') {
             $method = 'GET';
         }
 
-        $routesForMethod = $this->routes[$method] ?? [];
+        $routesForMethod = isset($this->routes[$method]) && is_array($this->routes[$method])
+            ? $this->routes[$method]
+            : [];
 
         foreach ($routesForMethod as $route) {
             if (preg_match($route['regex'], $path, $matches)) {
                 $params = [];
                 foreach ($route['paramNames'] as $name) {
-                    $params[] = $matches[$name] ?? null;
+                    $params[$name] = $matches[$name] ?? null;
                 }
 
                 foreach ($this->globalMiddlewares as $gmw) {
-                    $ok = $this->runMiddleware($gmw, $params);
-                    if ($ok === false) return;
+                    $result = $this->runMiddleware($gmw, $params);
+                    if ($result instanceof Response) {
+                        return $result;
+                    }
+                    if ($result === false) {
+                        return new Response('Middleware blocked', 403);
+                    }
                 }
-                
+
                 foreach ($route['middlewares'] as $mw) {
-                    $ok = $this->runMiddleware($mw, $params);
-                    if ($ok === false) {
-                        return;
+                    $result = $this->runMiddleware($mw, $params);
+                    if ($result instanceof Response) {
+                        return $result;
+                    }
+                    if ($result === false) {
+                        return new Response('Access denied', 403);
                     }
                 }
 
                 $callable = $this->resolveHandler($route['handler']);
                 if (!is_callable($callable)) {
-                    http_response_code(500);
-                    echo "Handler for route {$route['path']} is not callable.";
-                    return;
+                    return new Response("Handler for route {$route['path']} is not callable.", 500);
                 }
 
-                call_user_func_array($callable, $params);
-                return;
+                $result = call_user_func_array($callable, array_values($params));
+                return Response::makeFromControllerResult($result);
             }
         }
 
-        http_response_code(404);
-        echo '404 Not Found';
+        return new Response('404 Not Found', 404);
+    }
+
+    private function parseJsonInput(): void
+    {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        // Перевіряємо чи це JSON запит
+        if (strpos($contentType, 'application/json') !== false) {
+            $input = file_get_contents('php://input');
+
+            if (!empty($input)) {
+                $data = json_decode($input, true);
+
+                if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
+                    $_REQUEST = array_merge($_REQUEST, $data);
+
+                    // Також додаємо до $_POST для зворотної сумісності
+                    $_POST = array_merge($_POST, $data);
+                }
+            }
+        }
     }
 
     private function normalizePath(string $path): string
@@ -175,7 +228,7 @@ class Router
         return $ref->newInstance();
     }
 
-    private function runMiddleware($mw, array $params)
+    private function runMiddleware($mw, array $params): Response|bool
     {
         $callable = null;
 
@@ -198,6 +251,12 @@ class Router
             return true;
         }
 
-        return call_user_func($callable, $params, $this->container);
+        $result = call_user_func($callable, $params, $this->container);
+
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        return $result !== false;
     }
 }

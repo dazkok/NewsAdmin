@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Support;
 
 use Random\RandomException;
 
@@ -16,6 +16,14 @@ class Csrf
         }
 
         return $_SESSION['_csrf'];
+    }
+
+    /**
+     * @throws RandomException
+     */
+    public function getToken(): string
+    {
+        return $this->generate();
     }
 
     public function validate(?string $token): bool
