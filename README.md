@@ -41,7 +41,7 @@ docker compose exec app composer install
 docker compose exec app php migrate.php
 ```
 
-### 5. Access the application
+### 6. Access the application
 http://localhost:8080
 
 Default login credentials:
