@@ -31,7 +31,12 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-### 4. Run database migrations
+### 4. Setting up Composer dependencies
+```bash
+docker compose exec app composer install
+```
+
+### 5. Run database migrations
 ```bash
 docker compose exec app php migrate.php
 ```
