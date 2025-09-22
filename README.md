@@ -30,6 +30,7 @@ cp .env.example .env
 ```bash
 docker compose up -d --build
 ```
+If you encounter an EOF error, restart Docker Desktop and try again.
 
 ### 4. Setting up Composer dependencies
 ```bash
