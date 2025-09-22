@@ -19,7 +19,12 @@ class AuthService
             return false;
         }
 
-        return $login === $this->username && $password === $this->password;
+        if ($login === $this->username && $password === $this->password) {
+            $this->loginUser(['username' => $login]);
+            return true;
+        }
+
+        return false;
     }
 
     private function loginUser(array $data): void

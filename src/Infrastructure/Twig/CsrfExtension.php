@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Support\Twig;
+namespace App\Infrastructure\Twig;
 
+use App\Infrastructure\Support\Csrf;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
-use App\Support\Csrf;
 
 class CsrfExtension extends AbstractExtension
 {

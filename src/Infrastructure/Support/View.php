@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Support;
+namespace App\Infrastructure\Support;
 
-use App\Support\Twig\CsrfExtension;
+use App\Infrastructure\Twig\CsrfExtension;
 use Twig\Environment;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -19,10 +19,10 @@ class View
     {
         $this->csrf = $csrf;
 
-        $loader = new FilesystemLoader(dirname(__DIR__, 2) . '/templates');
+        $loader = new FilesystemLoader(dirname(__DIR__, 3) . '/templates');
         $this->twig = new Environment($loader, [
             'debug' => $_ENV['APP_ENV'] === 'dev',
-            'cache' => $_ENV['APP_ENV'] === 'prod' ? dirname(__DIR__, 2) . '/var/cache/twig' : false
+            'cache' => $_ENV['APP_ENV'] === 'prod' ? dirname(__DIR__, 3) . '/var/cache/twig' : false
         ]);
 
         $this->twig->addExtension(new CsrfExtension($this->csrf));

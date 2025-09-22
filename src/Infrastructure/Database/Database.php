@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Database;
 
-use App\Support\Config;
+use App\Infrastructure\Support\Config;
 use PDO;
 
 class Database

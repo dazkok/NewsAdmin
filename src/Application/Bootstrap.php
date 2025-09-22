@@ -21,9 +21,9 @@ use App\Http\Response;
 use App\Infrastructure\Cache\RedisCache;
 use App\Infrastructure\Database\Database;
 use App\Infrastructure\Logging\FileLogger;
-use App\Support\Config;
-use App\Support\Csrf;
-use App\Support\View;
+use App\Infrastructure\Support\Config;
+use App\Infrastructure\Support\Csrf;
+use App\Infrastructure\Support\View;
 use Dotenv\Dotenv;
 
 class Bootstrap

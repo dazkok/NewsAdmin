@@ -1,38 +1,31 @@
 # 📰 News Admin Panel
 
-A simple PHP 8.3 news management website with login, admin panel, and news CRUD.
+A simple PHP 8.3 news management website with login, admin panel, and news CRUD operations.
 
 ## 🛠 Tech Stack
 
-- PHP 8.3
-- MySQL
-- Redis
-- Twig templates
-- Vanilla JS
-- Docker
-- HTML & CSS
+- **PHP 8.3** with Object-Oriented Programming
+- **MySQL** for database storage
+- **Redis** for caching
+- **Twig** templates for views
+- **Vanilla JavaScript**
+- **Docker** for containerization
+- **Pure HTML & CSS**
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### 1. Clone repository
+### 1. Clone and setup
+```bash
+git clone <repository-url>
+cd <repository-folder>
+```
 
-`git clone <repository-url>`
+### 2. Start the application
+```bash
+docker compose up -d --build
+```
 
-`cd <repository-folder>`
-
-### 2. Configure environment
-
-Copy the example .env.example to .env and adjust values if needed:
-
-`cp .env.example .env`
-
-### 3. Build and start Docker containers
-`docker compose up -d --build`
-
-### 4. Run database migrations
-`docker compose exec app php migrate.php`
-
-### 5. Access the application
+### 3. Access the application
 http://localhost:8080
 
 Default login credentials:

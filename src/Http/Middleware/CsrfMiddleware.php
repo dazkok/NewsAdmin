@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Support\Csrf;
+use App\Infrastructure\Support\Csrf;
 
 class CsrfMiddleware
 {
