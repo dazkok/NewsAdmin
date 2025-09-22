@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Services\NewsService;
+use App\Domain\Validation\ValidationException;
+use App\Domain\Validation\Validator;
 use App\Http\Response;
 
 class NewsController extends Controller
 {
     private NewsService $newsService;
+    private Validator $validator;
 
-    public function __construct(NewsService $newsService)
+    public function __construct(NewsService $newsService, Validator $validator)
     {
         $this->newsService = $newsService;
+        $this->validator = $validator;
     }
 
     public function index(): Response
@@ -35,6 +39,13 @@ class NewsController extends Controller
 
     public function apiGet(int $id): Response
     {
+        if ($id <= 0) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Invalid news ID'
+            ], 400);
+        }
+
         $news = $this->newsService->getNewsById($id);
 
         return $this->json([
@@ -45,26 +56,17 @@ class NewsController extends Controller
 
     public function store(): Response
     {
-        if (str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')) {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $title = $input['title'] ?? '';
-            $content = $input['content'] ?? '';
-        } else {
-            $title = $_POST['title'] ?? '';
-            $content = $_POST['content'] ?? '';
-        }
-
-        if (empty($title) || empty($content)) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Title and content are required'
-            ], 400);
-        }
-
         try {
+            $inputData = $this->getRequestData();
+
+            $this->validator->validateOrFail($inputData, [
+                'title' => 'required|min:1|max:255|safe_html',
+                'content' => 'required|min:1|max:10000|safe_html'
+            ]);
+
             $news = $this->newsService->createNews([
-                'title' => $title,
-                'content' => $content,
+                'title' => trim($inputData['title']),
+                'content' => trim($inputData['content']),
                 'created_at' => date('Y-m-d H:i:s')
             ]);
 
@@ -72,7 +74,9 @@ class NewsController extends Controller
                 'success' => true,
                 'message' => 'News created successfully',
                 'news' => $news
-            ]);
+            ], 201);
+        } catch (ValidationException $e) {
+            return $this->json($e->toArray(), 422);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -83,22 +87,24 @@ class NewsController extends Controller
 
     public function update(int $id): Response
     {
-        $input = json_decode(file_get_contents('php://input'), true);
-
-        $title = $input['title'] ?? '';
-        $content = $input['content'] ?? '';
-
-        if (empty($title) || empty($content)) {
-            return $this->json([
-                'success' => false,
-                'error' => 'Title and content are required'
-            ], 400);
-        }
-
         try {
+            if ($id <= 0) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Invalid news ID'
+                ], 400);
+            }
+
+            $inputData = $this->getRequestData();
+
+            $this->validator->validateOrFail($inputData, [
+                'title' => 'required|min:1|max:255|safe_html',
+                'content' => 'required|min:1|max:10000|safe_html'
+            ]);
+
             $success = $this->newsService->updateNews($id, [
-                'title' => $title,
-                'content' => $content,
+                'title' => trim($inputData['title']),
+                'content' => trim($inputData['content']),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
 
@@ -113,6 +119,8 @@ class NewsController extends Controller
                     'error' => 'News not found'
                 ], 404);
             }
+        } catch (ValidationException $e) {
+            return $this->json($e->toArray(), 422);
         } catch (\Exception $e) {
             return $this->json([
                 'success' => false,
@@ -124,6 +132,13 @@ class NewsController extends Controller
     public function delete(int $id): Response
     {
         try {
+            if ($id <= 0) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Invalid news ID'
+                ], 400);
+            }
+
             $success = $this->newsService->deleteNews($id);
 
             if ($success) {

@@ -15,11 +15,11 @@ class AuthService
 
     public function attempt(string $login, string $password): bool
     {
-        if ($login === $this->username && $password === $this->password) {
-            $this->loginUser(['username' => $login]);
-            return true;
+        if (empty(trim($login)) || empty(trim($password))) {
+            return false;
         }
-        return false;
+
+        return $login === $this->username && $password === $this->password;
     }
 
     private function loginUser(array $data): void

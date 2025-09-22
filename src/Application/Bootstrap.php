@@ -12,6 +12,7 @@ use App\Domain\Events\NewsEvents;
 use App\Domain\Repositories\NewsRepository;
 use App\Domain\Services\AuthService;
 use App\Domain\Services\NewsService;
+use App\Domain\Validation\Validator;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewsController;
 use App\Http\Middleware\CsrfMiddleware;
@@ -58,6 +59,8 @@ class Bootstrap
         $this->container->set('csrf', new Csrf());
         $this->container->set('view', new View($this->container->get('csrf')));
 
+        $this->container->set('validator', new Validator());
+
         $this->container->set(NewsRepositoryInterface::class, new NewsRepository(
             $this->container->get('db')
         ));
@@ -85,7 +88,7 @@ class Bootstrap
             return $dispatcher;
         });
 
-        $this->container->set('logger', function() {
+        $this->container->set('logger', function () {
             return $this->container->get(LoggerInterface::class);
         });
 
@@ -117,9 +120,13 @@ class Bootstrap
 
     private function registerControllers(): void
     {
-        $this->container->set(AuthController::class, new AuthController());
+        $this->container->set(AuthController::class, new AuthController(
+            $this->container->get('validator')
+        ));
+
         $this->container->set(NewsController::class, new NewsController(
-            $this->container->get(NewsService::class)
+            $this->container->get(NewsService::class),
+            $this->container->get('validator')
         ));
     }
 

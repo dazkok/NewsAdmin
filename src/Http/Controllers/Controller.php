@@ -66,4 +66,13 @@ abstract class Controller
         unset($_SESSION['flash']);
         return $flash;
     }
+
+    protected function getRequestData(): array
+    {
+        if (($_SERVER['CONTENT_TYPE'] ?? '') === 'application/json') {
+            return json_decode(file_get_contents('php://input'), true) ?? [];
+        }
+
+        return $_POST;
+    }
 }
