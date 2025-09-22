@@ -61,6 +61,9 @@ class Router
         ];
     }
 
+    /**
+     * @throws ReflectionException
+     */
     public function dispatch(string $method, string $uri): Response
     {
         $method = strtoupper($method);

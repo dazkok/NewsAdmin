@@ -53,3 +53,4 @@ Thumbs.db
 /var/logs/*
 /var/sessions/*
 /logs/
+/public/logs/

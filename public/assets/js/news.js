@@ -39,7 +39,7 @@ function createArticle(data, button) {
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                showToast('success', 'Article created successfully!');
+                showToast('success', result.message || 'Article created successfully!');
                 resetForm();
                 loadAllNews();
             } else {
@@ -90,7 +90,7 @@ function updateArticle(id, data, button) {
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                showToast('success', 'Article updated successfully!');
+                showToast('success', result.message || 'Article updated successfully!');
                 resetForm();
                 loadAllNews();
             } else {
@@ -116,7 +116,7 @@ function deleteArticle(id) {
         .then(res => res.json())
         .then(result => {
             if (result.success) {
-                showToast('success', 'Article deleted successfully');
+                showToast('success', result.message || 'Article deleted successfully');
                 loadAllNews();
             } else {
                 showToast('error', result.error || 'Error deleting article');

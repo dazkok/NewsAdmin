@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Repositories\Contracts;
+namespace App\Domain\Contracts;
 
 use App\Domain\Models\News;
 

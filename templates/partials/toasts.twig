@@ -1,0 +1,21 @@
+<div id="toast-container">
+    {% if error %}
+        <div class="toast toast-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if success %}
+        <div class="toast toast-success">
+            {{ success }}
+        </div>
+    {% endif %}
+
+    {% if warnings %}
+        {% for warning in warnings %}
+            <div class="toast toast-warning">
+                {{ warning }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>

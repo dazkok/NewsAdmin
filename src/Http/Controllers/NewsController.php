@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
+use App\Domain\Services\NewsService;
 use App\Http\Response;
 
 class NewsController extends Controller
 {
-    private NewsRepositoryInterface $newsRepository;
+    private NewsService $newsService;
 
-    public function __construct(NewsRepositoryInterface $newsRepository)
+    public function __construct(NewsService $newsService)
     {
-        $this->newsRepository = $newsRepository;
+        $this->newsService = $newsService;
     }
 
     public function index(): Response
     {
-        $news = $this->newsRepository->all();
+        $news = $this->newsService->getNewsForPage();
+
         return $this->render('news/news.twig', [
             'news' => $news
         ]);
@@ -24,7 +25,8 @@ class NewsController extends Controller
 
     public function apiList(): Response
     {
-        $news = $this->newsRepository->all();
+        $news = $this->newsService->getNewsForApi();
+
         return $this->json([
             'success' => true,
             'data' => $news
@@ -33,14 +35,7 @@ class NewsController extends Controller
 
     public function apiGet(int $id): Response
     {
-        $news = $this->newsRepository->find($id);
-
-        if (!$news) {
-            return $this->json([
-                'success' => false,
-                'error' => 'News not found'
-            ], 404);
-        }
+        $news = $this->newsService->getNewsById($id);
 
         return $this->json([
             'success' => true,
@@ -67,7 +62,7 @@ class NewsController extends Controller
         }
 
         try {
-            $news = $this->newsRepository->create([
+            $news = $this->newsService->createNews([
                 'title' => $title,
                 'content' => $content,
                 'created_at' => date('Y-m-d H:i:s')
@@ -101,7 +96,7 @@ class NewsController extends Controller
         }
 
         try {
-            $success = $this->newsRepository->update($id, [
+            $success = $this->newsService->updateNews($id, [
                 'title' => $title,
                 'content' => $content,
                 'updated_at' => date('Y-m-d H:i:s')
@@ -129,7 +124,7 @@ class NewsController extends Controller
     public function delete(int $id): Response
     {
         try {
-            $success = $this->newsRepository->delete($id);
+            $success = $this->newsService->deleteNews($id);
 
             if ($success) {
                 return $this->json([

@@ -3,7 +3,8 @@
     "php": "^8.3",
     "twig/twig": "^v3.21.1",
     "vlucas/phpdotenv": "v5.6.2",
-    "ext-pdo": "*"
+    "ext-pdo": "*",
+    "ext-redis": "*"
   },
   "autoload": {
     "psr-4": {

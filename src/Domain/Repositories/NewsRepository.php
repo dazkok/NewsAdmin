@@ -2,8 +2,8 @@
 
 namespace App\Domain\Repositories;
 
+use App\Domain\Contracts\NewsRepositoryInterface;
 use App\Domain\Models\News;
-use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
 use App\Infrastructure\Database\Database;
 use DateTime;
 use PDO;

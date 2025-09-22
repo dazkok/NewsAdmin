@@ -20,10 +20,14 @@ class AuthController extends Controller
         $username = $_POST['username'] ?? '';
         $password = $_POST['password'] ?? '';
 
+        $this->logger()->info('Login attempt', ['username' => $username]);
+
         if ($this->auth()->attempt($username, $password)) {
+            $this->logger()->info('Login successful', ['username' => $username]);
             return $this->redirect('/admin');
         }
 
+        $this->logger()->warning('Login failed', ['username' => $username]);
         return $this->redirectWithError('/', 'Invalid username or password');
     }
 

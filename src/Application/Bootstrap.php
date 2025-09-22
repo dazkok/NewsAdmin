@@ -2,15 +2,24 @@
 
 namespace App\Application;
 
-use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
+use App\Application\Listeners\NewsCacheListener;
+use App\Domain\Contracts\CacheInterface;
+use App\Domain\Contracts\EventDispatcherInterface;
+use App\Domain\Contracts\LoggerInterface;
+use App\Domain\Contracts\NewsRepositoryInterface;
+use App\Domain\Events\EventDispatcher;
+use App\Domain\Events\NewsEvents;
 use App\Domain\Repositories\NewsRepository;
 use App\Domain\Services\AuthService;
+use App\Domain\Services\NewsService;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewsController;
 use App\Http\Middleware\CsrfMiddleware;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Response;
+use App\Infrastructure\Cache\RedisCache;
 use App\Infrastructure\Database\Database;
+use App\Infrastructure\Logging\FileLogger;
 use App\Support\Config;
 use App\Support\Csrf;
 use App\Support\View;
@@ -49,23 +58,68 @@ class Bootstrap
         $this->container->set('csrf', new Csrf());
         $this->container->set('view', new View($this->container->get('csrf')));
 
+        $this->container->set(NewsRepositoryInterface::class, new NewsRepository(
+            $this->container->get('db')
+        ));
+
+        $this->container->set(LoggerInterface::class, function () {
+            $config = $this->container->get('config');
+            return new FileLogger(
+                $config->get('LOG_PATH', __DIR__ . '/../../../logs/app.log'),
+                $config->get('LOG_DATE_FORMAT', 'Y-m-d H:i:s')
+            );
+        });
+
+        $this->container->set(CacheInterface::class, function () {
+            $config = $this->container->get('config');
+            return new RedisCache(
+                $config->get('REDIS_HOST', 'redis'),
+                $config->get('REDIS_PORT', 6379),
+                $config->get('REDIS_PREFIX', 'news_')
+            );
+        });
+
+        $this->container->set(EventDispatcherInterface::class, function () {
+            $dispatcher = new EventDispatcher();
+            $this->registerEventListeners($dispatcher);
+            return $dispatcher;
+        });
+
+        $this->container->set('logger', function() {
+            return $this->container->get(LoggerInterface::class);
+        });
+
         $this->container->set('authService', new AuthService(
             $this->container->get('config')->get('AUTH_USER'),
             $this->container->get('config')->get('AUTH_PASSWORD')
         ));
 
-        $this->container->set(NewsRepositoryInterface::class, new NewsRepository(
-            $this->container->get('db')
-        ));
+        $this->container->set(NewsService::class, function () {
+            return new NewsService(
+                $this->container->get(NewsRepositoryInterface::class),
+                $this->container->get(CacheInterface::class),
+                $this->container->get(LoggerInterface::class),
+                $this->container->get(EventDispatcherInterface::class),
+                $this->container->get('config')->get('CACHE_TTL', 3600)
+            );
+        });
+    }
+
+    private function registerEventListeners(EventDispatcherInterface $dispatcher): void
+    {
+        $cache = $this->container->get(CacheInterface::class);
+        $cacheListener = new NewsCacheListener($cache);
+
+        $dispatcher->listen(NewsEvents::NEWS_CREATED, [$cacheListener, 'handleNewsCreated']);
+        $dispatcher->listen(NewsEvents::NEWS_UPDATED, [$cacheListener, 'handleNewsUpdated']);
+        $dispatcher->listen(NewsEvents::NEWS_DELETED, [$cacheListener, 'handleNewsDeleted']);
     }
 
     private function registerControllers(): void
     {
-        $this->container = Container::getInstance();
-
         $this->container->set(AuthController::class, new AuthController());
         $this->container->set(NewsController::class, new NewsController(
-            $this->container->get(NewsRepositoryInterface::class)
+            $this->container->get(NewsService::class)
         ));
     }
 

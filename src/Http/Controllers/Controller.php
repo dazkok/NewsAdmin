@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Contracts\LoggerInterface;
 use App\Http\Response;
 use App\Application\Container;
 
@@ -28,6 +29,11 @@ abstract class Controller
     protected function auth()
     {
         return Container::getInstance()->get('authService');
+    }
+
+    protected function logger(): LoggerInterface
+    {
+        return Container::getInstance()->get('logger');
     }
 
     protected function redirectWithError(string $url, string $message): Response
@@ -60,12 +66,4 @@ abstract class Controller
         unset($_SESSION['flash']);
         return $flash;
     }
-
-//    protected function requireAuth(): void
-//    {
-//        if (!$this->auth->check()) {
-//            $this->redirect('/')->send();
-//            exit;
-//        }
-//    }
 }
