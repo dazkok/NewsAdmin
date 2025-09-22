@@ -16,16 +16,22 @@ A simple PHP 8.3 news management website with login, admin panel, and news CRUD 
 
 ### 1. Clone and setup
 ```bash
-git clone <repository-url>
+git clone https://github.com/dazkok/NewsAdmin <repository-folder>
 cd <repository-folder>
 ```
 
-### 2. Start the application
+### 2. Configure environment
+Copy the example .env.example to .env and adjust values if needed:
+```bash
+cp .env.example .env
+```
+
+### 3. Start the application
 ```bash
 docker compose up -d --build
 ```
 
-### 3. Access the application
+### 4. Access the application
 http://localhost:8080
 
 Default login credentials:
