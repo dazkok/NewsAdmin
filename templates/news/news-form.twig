@@ -1,0 +1,30 @@
+<div class="news-form" id="newsForm">
+    <div class="news-header">
+        <h2 id="formTitle">Create New Article</h2>
+        <button type="button" id="cancelEditBtn" class="btn-icon" onclick="cancelEdit()"
+                style="display: none;" title="Cancel edition">
+            <img src="/assets/images/icons/close.svg" alt="Cancel"/>
+        </button>
+    </div>
+
+    <form id="articleForm">
+        <input type="hidden" id="articleId" name="id" value="">
+
+        <div class="form-group">
+            <label class="form-label" for="title">Title:</label>
+            <input type="text" id="title" name="title" placeholder="Title" required maxlength="255"
+                   class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="content">Content:</label>
+            <textarea id="content" name="content" placeholder="Content" required class="form-input"
+                      rows="6"></textarea>
+        </div>
+
+        <div class="btn-group-vertical">
+            <button id="formButton" type="submit" class="btn btn-primary btn-full">Create</button>
+            <a href="/logout" class="btn btn-secondary btn-full">Logout</a>
+        </div>
+    </form>
+</div>

@@ -9,7 +9,7 @@ class Router
 {
     private array $routes = [];
     private array $container;
-    private array $globalMiddlewares = ['csrf_mw'];
+    private array $globalMiddlewares = ['flash', 'csrf_mw'];
 
     public function __construct(array $container = [])
     {
@@ -124,8 +124,7 @@ class Router
     {
         $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
 
-        // Перевіряємо чи це JSON запит
-        if (strpos($contentType, 'application/json') !== false) {
+        if (str_contains($contentType, 'application/json')) {
             $input = file_get_contents('php://input');
 
             if (!empty($input)) {
@@ -134,7 +133,6 @@ class Router
                 if (json_last_error() === JSON_ERROR_NONE && is_array($data)) {
                     $_REQUEST = array_merge($_REQUEST, $data);
 
-                    // Також додаємо до $_POST для зворотної сумісності
                     $_POST = array_merge($_POST, $data);
                 }
             }

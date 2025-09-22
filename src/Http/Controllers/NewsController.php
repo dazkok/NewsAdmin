@@ -3,78 +3,150 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Repositories\Contracts\NewsRepositoryInterface;
-use App\Support\View;
-use JetBrains\PhpStorm\NoReturn;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use App\Http\Response;
 
-class NewsController
+class NewsController extends Controller
 {
-    private NewsRepositoryInterface $news;
-    private View $view;
+    private NewsRepositoryInterface $newsRepository;
 
-    public function __construct(NewsRepositoryInterface $news, View $view)
+    public function __construct(NewsRepositoryInterface $newsRepository)
     {
-        $this->news = $news;
-        $this->view = $view;
+        $this->newsRepository = $newsRepository;
     }
 
-    /**
-     * @throws SyntaxError
-     * @throws RuntimeError
-     * @throws LoaderError
-     */
-    public function index(): string
+    public function index(): Response
     {
-        $articles = $this->news->all();
-        return $this->view->render('news/index.twig', ['articles' => $articles]);
+        $news = $this->newsRepository->all();
+        return $this->render('news/news.twig', [
+            'news' => $news
+        ]);
     }
 
-    /**
-     * @throws SyntaxError
-     * @throws RuntimeError
-     * @throws LoaderError
-     */
-    public function show(int $id): string
+    public function apiList(): Response
     {
-        $article = $this->news->find($id);
-        if ($article) {
-            http_response_code(404);
-            return $this->view->render('errors/404.twig');
-        }
-        return $this->view->render('news/show.twig', ['article' => $article]);
+        $news = $this->newsRepository->all();
+        return $this->json([
+            'success' => true,
+            'data' => $news
+        ]);
     }
 
-    /**
-     * @throws SyntaxError
-     * @throws RuntimeError
-     * @throws LoaderError
-     */
-    public function edit(int $id): string
+    public function apiGet(int $id): Response
     {
-        $article = $this->news->find($id);
-        if (!$article) {
-            http_response_code(404);
-            return $this->view->render('errors/404.twig');
+        $news = $this->newsRepository->find($id);
+
+        if (!$news) {
+            return $this->json([
+                'success' => false,
+                'error' => 'News not found'
+            ], 404);
         }
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->news->update($id, [
-                'title' => $_POST['title'] ?? '',
-                'content' => $_POST['content'] ?? ''
+        return $this->json([
+            'success' => true,
+            'data' => $news
+        ]);
+    }
+
+    public function store(): Response
+    {
+        if (str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')) {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $title = $input['title'] ?? '';
+            $content = $input['content'] ?? '';
+        } else {
+            $title = $_POST['title'] ?? '';
+            $content = $_POST['content'] ?? '';
+        }
+
+        if (empty($title) || empty($content)) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Title and content are required'
+            ], 400);
+        }
+
+        try {
+            $news = $this->newsRepository->create([
+                'title' => $title,
+                'content' => $content,
+                'created_at' => date('Y-m-d H:i:s')
             ]);
-            header('Location: /news/{$id}');
-            exit;
-        }
 
-        return $this->view->render('news/edit.twig', ['article' => $article]);
+            return $this->json([
+                'success' => true,
+                'message' => 'News created successfully',
+                'news' => $news
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Error creating news: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    #[NoReturn] public function delete(int $id): void
+    public function update(int $id): Response
     {
-        $this->news->delete($id);
-        header("Location: /news");
-        exit;
+        $input = json_decode(file_get_contents('php://input'), true);
+
+        $title = $input['title'] ?? '';
+        $content = $input['content'] ?? '';
+
+        if (empty($title) || empty($content)) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Title and content are required'
+            ], 400);
+        }
+
+        try {
+            $success = $this->newsRepository->update($id, [
+                'title' => $title,
+                'content' => $content,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
+            if ($success) {
+                return $this->json([
+                    'success' => true,
+                    'message' => 'News updated successfully'
+                ]);
+            } else {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'News not found'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Error updating news: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function delete(int $id): Response
+    {
+        try {
+            $success = $this->newsRepository->delete($id);
+
+            if ($success) {
+                return $this->json([
+                    'success' => true,
+                    'message' => 'News deleted successfully'
+                ]);
+            } else {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'News not found'
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'error' => 'Error deleting news: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

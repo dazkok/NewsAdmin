@@ -8,7 +8,11 @@ class AuthController extends Controller
 {
     public function showLogin(): Response
     {
-        return $this->render('login.twig');
+        $error = $this->getFlash();
+
+        return $this->render('auth/login.twig', [
+            'error' => $error && $error['type'] === 'error' ? $error['message'] : null
+        ]);
     }
 
     public function login(): Response
@@ -20,15 +24,12 @@ class AuthController extends Controller
             return $this->redirect('/admin');
         }
 
-        return $this->render('login.twig', [
-            'error' => 'Invalid username or password'
-        ]);
+        return $this->redirectWithError('/', 'Invalid username or password');
     }
 
-//    #[NoReturn] public function logout(): void
-//    {
-//        $this->authService->logout();
-//        header('Location: /');
-//        exit();
-//    }
+    public function logout(): Response
+    {
+        $this->auth()->logout();
+        return $this->redirect('/');
+    }
 }

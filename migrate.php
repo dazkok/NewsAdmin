@@ -2,11 +2,13 @@
 declare(strict_types=1);
 
 use App\Application\Bootstrap;
+use App\Application\Container;
 
 require __DIR__ . '/vendor/autoload.php';
 
-$bootstrap = new Bootstrap(__DIR__ . '/.env', false);
-$db = $bootstrap->get('db')->pdo();
+$bootstrap = new Bootstrap(__DIR__ . '/.env');
+$container = Container::getInstance();
+$db = $container->get('db')->pdo();
 
 // --- 1. get migrations list ---
 $migrationsDir = __DIR__ . '/migrations';

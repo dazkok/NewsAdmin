@@ -8,6 +8,7 @@ use App\Domain\Services\AuthService;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NewsController;
 use App\Http\Middleware\CsrfMiddleware;
+use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Response;
 use App\Infrastructure\Database\Database;
 use App\Support\Config;
@@ -22,7 +23,7 @@ class Bootstrap
     /**
      * @throws \Exception
      */
-    public function __construct(string $envPath, bool $runRoutes = true)
+    public function __construct(string $envPath)
     {
         $this->container = Container::getInstance();
         $this->loadEnvironment($envPath);
@@ -63,7 +64,9 @@ class Bootstrap
         $this->container = Container::getInstance();
 
         $this->container->set(AuthController::class, new AuthController());
-//        $container->set(NewsController::class, new NewsController());
+        $this->container->set(NewsController::class, new NewsController(
+            $this->container->get(NewsRepositoryInterface::class)
+        ));
     }
 
     /**
@@ -72,6 +75,7 @@ class Bootstrap
     private function registerMiddleware(): void
     {
         $this->container->set('csrf_mw', new CsrfMiddleware($this->container->get('csrf')));
+        $this->container->set('guest', new RedirectIfAuthenticated());
 
         $this->container->set('auth', function () {
             $auth = $this->container->get('authService');

@@ -1,0 +1,39 @@
+{% extends 'layouts/base.twig' %}
+
+{% block title %}News Admin{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="/assets/css/news.css">
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="news-card">
+            <h2>All News</h2>
+
+            <div class="news-container">
+                <div class="news-list">
+                    <div class="news-items">
+                        {% if news and news|length > 0 %}
+                            {% for article in news %}
+                                {% include 'news/news-item.twig' with {'article': article} %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="empty-state" {% if news and news|length > 0 %}style="display: none;"{% endif %}>
+                        <p>No news articles found. Create your first article!</p>
+                    </div>
+                </div>
+
+                <div class="news-form-container">
+                    {% include 'news/news-form.twig' %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="/assets/js/news.js"></script>
+{% endblock %}

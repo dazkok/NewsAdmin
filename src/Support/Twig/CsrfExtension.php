@@ -30,6 +30,6 @@ class CsrfExtension extends AbstractExtension
 
     public function getCsrfField(): string
     {
-        return '<input type="hidden" name="csrf_token" value="' . $this->csrf->getToken() . '">';
+        return '<input type="hidden" name="csrf" value="' . $this->csrf->getToken() . '">';
     }
 }

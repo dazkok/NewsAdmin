@@ -13,6 +13,7 @@ class View
 {
     private Environment $twig;
     private Csrf $csrf;
+    private array $globalData = [];
 
     public function __construct(Csrf $csrf)
     {
@@ -25,11 +26,35 @@ class View
         ]);
 
         $this->twig->addExtension(new CsrfExtension($this->csrf));
+
+        $this->globalData = [
+            'app_name' => $_ENV['APP_NAME'] ?? 'News Admin',
+            'app_env' => $_ENV['APP_ENV'] ?? 'production'
+        ];
+    }
+
+    public function addGlobal(string $key, $value): void
+    {
+        $this->globalData[$key] = $value;
+    }
+
+    public function getGlobals(): array
+    {
+        return $this->globalData;
     }
 
     public function render(string $template, array $data = []): string
     {
+        $data = array_merge($this->globalData, $data);
+
         try {
+            $data['auth'] = [
+                'check' => function () {
+                    return isset($_SESSION['authenticated']) && $_SESSION['authenticated'];
+                },
+                'user' => $_SESSION['username'] ?? null
+            ];
+
             return $this->twig->render($template, $data);
         } catch (LoaderError $e) {
             return "Template error: " . $e->getMessage();

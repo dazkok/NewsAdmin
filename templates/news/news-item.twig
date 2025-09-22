@@ -1,0 +1,14 @@
+<div class="news-item" data-id="{{ article.id }}">
+    <div class="news-item-content">
+        <div class="news-title truncate-one-line">{{ article.title }}</div>
+        <p class="truncate-one-line">{{ article.content }}</p>
+    </div>
+    <div class="news-item-actions">
+        <button class="btn-icon" onclick="editArticle({{ article.id }})" title="Edit">
+            <img src="/assets/images/icons/pencil.svg" alt="Edit"/>
+        </button>
+        <button class="btn-icon" onclick="deleteArticle({{ article.id }})" title="Delete">
+            <img src="/assets/images/icons/close.svg" alt="Delete"/>
+        </button>
+    </div>
+</div>

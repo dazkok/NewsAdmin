@@ -19,6 +19,9 @@ class Container
         return self::$instance;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function get(string $key)
     {
         if (!$this->has($key)) {

@@ -30,6 +30,37 @@ abstract class Controller
         return Container::getInstance()->get('authService');
     }
 
+    protected function redirectWithError(string $url, string $message): Response
+    {
+        $this->setFlash('error', $message);
+        return $this->redirect($url);
+    }
+
+    protected function redirectWithSuccess(string $url, string $message): Response
+    {
+        $_SESSION['flash'] = [
+            'type' => 'success',
+            'message' => $message
+        ];
+
+        return $this->redirect($url);
+    }
+
+    protected function setFlash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message
+        ];
+    }
+
+    protected function getFlash(): ?array
+    {
+        $flash = $_SESSION['flash'] ?? null;
+        unset($_SESSION['flash']);
+        return $flash;
+    }
+
 //    protected function requireAuth(): void
 //    {
 //        if (!$this->auth->check()) {
