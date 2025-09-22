@@ -31,7 +31,12 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-### 4. Access the application
+### 4. Run database migrations
+```bash
+docker compose exec app php migrate.php
+```
+
+### 5. Access the application
 http://localhost:8080
 
 Default login credentials:

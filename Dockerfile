@@ -30,10 +30,6 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Copy and set up startup script
-COPY startup.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/startup.sh
+RUN composer install --no-dev --optimize-autoloader
 
 EXPOSE 80
-
-CMD ["/usr/local/bin/startup.sh"]
